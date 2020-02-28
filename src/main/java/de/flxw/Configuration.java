@@ -2,10 +2,9 @@ package de.flxw;
 
 import lombok.Getter;
 import org.ini4j.Ini;
-
+import de.flxw.ConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.sql.Date;
 
 public class Configuration {
@@ -30,7 +29,7 @@ public class Configuration {
         return instance;
     }
 
-    public static Configuration setupConfiguration(String configPath) throws IOException {
+    public static Configuration setupConfiguration(String configPath) throws IOException, ConfigurationException {
         if (instance != null){
             return instance;
         } else {
@@ -42,18 +41,24 @@ public class Configuration {
         instance.repoDir = configFile.get("GENERAL", "REPODIRECTORY");
         instance.startDate = configFile.get("GENERAL", "STARTDATE", Date.class);
         instance.endDate  = configFile.get("GENERAL", "ENDDATE", Date.class);
-        instance.breakdays = configFile.get("GENERAL", "BREAK_DAYS", int.class);
+        String tempInt = configFile.get("GENERAL", "BREAK_DAYS");
+        instance.breakdays = (tempInt == null) ? -1 : Integer.parseInt(tempInt);
+
+        if (instance.isAnyParameterBad()) {
+            //TODO list the bad parameters
+            throw new ConfigurationException();
+        }
 
         return instance;
     }
 
     private boolean isAnyParameterBad() {
-        boolean returnValue;
+        boolean returnValue = false;
 
         returnValue  = repoDir == null;
         returnValue |= startDate == null;
         returnValue |= endDate   == null;
-        //TODO returnValue |= breakdays == null;
+        returnValue |= breakdays == -1;
 
         return returnValue;
     }

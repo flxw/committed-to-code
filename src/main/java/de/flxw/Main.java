@@ -38,8 +38,11 @@ public class Main {
             String configurationFile = cmd.getOptionValue("configurationfile");
             config = Configuration.setupConfiguration(configurationFile);
         } catch (IOException e) {
-            System.out.println("Configuration file is not accessible");
+            System.out.println("Configuration file is not accessible.");
             System.exit(2);
+        } catch (ConfigurationException e) {
+            System.out.println("Please check the configuration file contents, they are not valid.");
+            System.exit(3);
         }
 
         System.out.println(config);
