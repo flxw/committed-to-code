@@ -2,10 +2,11 @@ package de.flxw;
 
 import lombok.Getter;
 import org.ini4j.Ini;
-import de.flxw.ConfigurationException;
+import de.flxw.LocalDateCreationWrapper;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Date;
+import java.time.LocalDate;
+import java.util.stream.Stream;
 
 public class Configuration {
     private static Configuration instance;
@@ -14,14 +15,13 @@ public class Configuration {
     private String repoDir;
 
     @Getter
-    private Date startDate;
+    private LocalDate startDate;
 
     @Getter
-    private Date endDate;
+    private LocalDate endDate;
 
     @Getter
-    private int breakdays;
-
+    private Integer breakdays;
 
     private Configuration(){}
 
@@ -38,29 +38,24 @@ public class Configuration {
 
         Ini configFile = new Ini(new File(configPath));
 
-        instance.repoDir = configFile.get("GENERAL", "REPODIRECTORY");
-        instance.startDate = configFile.get("GENERAL", "STARTDATE", Date.class);
-        instance.endDate  = configFile.get("GENERAL", "ENDDATE", Date.class);
-        String tempInt = configFile.get("GENERAL", "BREAK_DAYS");
-        instance.breakdays = (tempInt == null) ? -1 : Integer.parseInt(tempInt);
+        String repoDir   = configFile.get("GENERAL", "REPODIRECTORY");
+        String startDate = configFile.get("GENERAL", "STARTDATE");
+        String endDate   = configFile.get("GENERAL", "ENDDATE");
+        String breakdays = configFile.get("GENERAL", "BREAK_DAYS");
 
-        if (instance.isAnyParameterBad()) {
-            //TODO list the bad parameters
+        boolean isConfigBad = Stream.of(repoDir, startDate, endDate,breakdays).anyMatch(x -> x == null);
+
+        if (isConfigBad) {
+            //TODO list the bad parameters in exception
             throw new ConfigurationException();
+        } else {
+            instance.repoDir = repoDir;
+            instance.startDate = LocalDate.parse(startDate);
+            instance.endDate = LocalDate.parse(endDate);
+            instance.breakdays = Integer.parseInt(breakdays);
         }
 
         return instance;
-    }
-
-    private boolean isAnyParameterBad() {
-        boolean returnValue = false;
-
-        returnValue  = repoDir == null;
-        returnValue |= startDate == null;
-        returnValue |= endDate   == null;
-        returnValue |= breakdays == -1;
-
-        return returnValue;
     }
 
     @Override
