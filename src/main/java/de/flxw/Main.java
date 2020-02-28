@@ -9,13 +9,42 @@ import java.io.IOException;
 import java.time.temporal.ChronoUnit;
 import java.time.LocalDate;
 import java.util.Random;
-import java.util.UUID;
-
+import org.apache.commons.cli.*;
 import static java.lang.Math.abs;
 
 public class Main {
     public static void main(String[] args) throws GitAPIException {
-        final int breakDays = 35;
+        Options options = new Options();
+
+        Option input = new Option("c", "configurationfile", true, "configuration file path");
+        input.setRequired(true);
+        options.addOption(input);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
+        }
+
+        Configuration config = null;
+        try {
+            String configurationFile = cmd.getOptionValue("configurationfile");
+            config = Configuration.setupConfiguration(configurationFile);
+        } catch (IOException e) {
+            System.out.println("Configuration file is not accessible");
+            System.exit(2);
+        }
+
+        System.out.println(config);
+
+        /*final int breakDays = 35;
         final LocalDate startDate = LocalDate.of(2019, 1, 1);
         final LocalDate endDate = LocalDate.of(2019,10,1);
 
@@ -41,7 +70,7 @@ public class Main {
         git.add().addFilepattern(".").call();
         git.commit()
            .setMessage("Commit all changes including additions")
-           .call();
+           .call();*/
     }
 
     private static LocalDate generateRandomDateBetweenTwoDates (LocalDate begin, LocalDate end) {
