@@ -1,5 +1,6 @@
 .idea
 application-local.ini
+target/
 
 # Compiled class file
 *.class
