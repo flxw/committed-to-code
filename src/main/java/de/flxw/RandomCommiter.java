@@ -1,5 +1,9 @@
 package de.flxw;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.PersonIdent;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,14 +16,20 @@ public class RandomCommiter {
     public RandomCommiter() {
     }
 
-    public void executeCommits() {
+    public void executeCommits() throws GitAPIException, IOException {
         Configuration cfg = Configuration.getInstance();
 
         int days = (int) cfg.getStartDate().until(cfg.getEndDate(), ChronoUnit.DAYS);
         int breakdays = cfg.getBreakdays();
+        File repoDir = new File(cfg.getRepoDir());
+
         List<Integer> breakDayList = generateFreeDayList(days, breakdays);
         int nextFreeDay = breakDayList.remove(0);
         breakdays--;
+
+        Git git = Git.init()
+                .setDirectory(repoDir)
+                .call();
 
         for (int d = 0; d < days; ++d) {
             if (d == nextFreeDay) {
@@ -33,12 +43,16 @@ public class RandomCommiter {
             LocalDate commitDate = cfg.getStartDate().plusDays(d);
             String fileName = commitDate.toString();
 
-            System.out.println(commitDate);
+            File file = new File(repoDir, fileName);
+            file.createNewFile();
 
-            /*Date date = java.sql.Date.valueOf(commitDate);
+            Date date = java.sql.Date.valueOf(commitDate);
             PersonIdent defaultCommitter = new PersonIdent(git.getRepository());
             PersonIdent committer = new PersonIdent(defaultCommitter, date);
-            git.commit().setMessage("Commit with time").setCommitter(committer).call();*/
+
+            git.add().addFilepattern(fileName).call();
+
+            git.commit().setMessage("A commit for " + fileName).setCommitter(committer).call();
         }
     }
 

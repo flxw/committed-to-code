@@ -37,7 +37,14 @@ public class Main {
             System.exit(3);
         }
 
-        RandomCommiter rc = new RandomCommiter();
-        rc.executeCommits();
+        try {
+            RandomCommiter rc = new RandomCommiter();
+            rc.executeCommits();
+        } catch (IOException e) {
+            System.out.println("Could not perform IO correctly, check permissions and storage");
+        } catch (GitAPIException e) {
+            System.out.println("Something failed with JGIT...");
+            e.printStackTrace();
+        }
     }
 }
