@@ -13,23 +13,32 @@ import java.util.*;
 
 
 public class RandomCommiter {
-    public RandomCommiter() {
-    }
+    private int breakdays;
+    private int days;
+    private Git git;
+    private TimeZone tz;
 
-    public void executeCommits() throws GitAPIException, IOException {
+    public RandomCommiter() throws GitAPIException {
         Configuration cfg = Configuration.getInstance();
 
-        int days = (int) cfg.getStartDate().until(cfg.getEndDate(), ChronoUnit.DAYS);
-        int breakdays = cfg.getBreakdays();
+        days = (int) cfg.getStartDate().until(cfg.getEndDate(), ChronoUnit.DAYS);
+        breakdays = cfg.getBreakdays();
+
         File repoDir = new File(cfg.getRepoDir());
+        git = Git.init()
+                 .setDirectory(repoDir)
+                 .call();
+
+        Calendar now = Calendar.getInstance();
+        tz = now.getTimeZone();
+    }
+
+    public void executeCommits() throws IOException, GitAPIException {
+        Configuration cfg = Configuration.getInstance();
 
         List<Integer> breakDayList = generateFreeDayList(days, breakdays);
         int nextFreeDay = breakDayList.remove(0);
         breakdays--;
-
-        Git git = Git.init()
-                .setDirectory(repoDir)
-                .call();
 
         for (int d = 0; d < days; ++d) {
             if (d == nextFreeDay) {
@@ -43,12 +52,11 @@ public class RandomCommiter {
             LocalDate commitDate = cfg.getStartDate().plusDays(d);
             String fileName = commitDate.toString();
 
-            File file = new File(repoDir, fileName);
+            File file = new File(cfg.getRepoDir(), fileName);
             file.createNewFile();
 
             Date date = java.sql.Date.valueOf(commitDate);
-            PersonIdent defaultCommitter = new PersonIdent(git.getRepository());
-            PersonIdent committer = new PersonIdent(defaultCommitter, date);
+            PersonIdent committer = new PersonIdent(cfg.getName(), cfg.getEmail(), date, tz);
 
             git.add().addFilepattern(fileName).call();
 

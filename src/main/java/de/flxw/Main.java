@@ -42,9 +42,11 @@ public class Main {
             rc.executeCommits();
         } catch (IOException e) {
             System.out.println("Could not perform IO correctly, check permissions and storage");
+            System.exit(4);
         } catch (GitAPIException e) {
             System.out.println("Something failed with JGIT...");
             e.printStackTrace();
+            System.exit(5);
         }
     }
 }

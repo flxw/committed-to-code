@@ -23,6 +23,12 @@ public class Configuration {
     @Getter
     private Integer breakdays;
 
+    @Getter
+    private String name;
+
+    @Getter
+    private String email;
+
     private Configuration(){}
 
     public static synchronized Configuration getInstance(){
@@ -42,8 +48,10 @@ public class Configuration {
         String startDate = configFile.get("GENERAL", "STARTDATE");
         String endDate   = configFile.get("GENERAL", "ENDDATE");
         String breakdays = configFile.get("GENERAL", "BREAK_DAYS");
+        String name      = configFile.get("USER", "NAME");
+        String email     = configFile.get("USER", "EMAIL");
 
-        boolean isConfigBad = Stream.of(repoDir, startDate, endDate,breakdays).anyMatch(x -> x == null);
+        boolean isConfigBad = Stream.of(repoDir, startDate, endDate,breakdays, name, email).anyMatch(x -> x == null);
 
         if (isConfigBad) {
             //TODO list the bad parameters in exception
@@ -53,6 +61,8 @@ public class Configuration {
             instance.startDate = LocalDate.parse(startDate);
             instance.endDate = LocalDate.parse(endDate);
             instance.breakdays = Integer.parseInt(breakdays);
+            instance.name = name;
+            instance.email = email;
         }
 
         return instance;
