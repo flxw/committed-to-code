@@ -11,23 +11,14 @@ import java.util.stream.Stream;
 public class Configuration {
     private static Configuration instance;
 
-    @Getter
-    private String repoDir;
-
-    @Getter
-    private LocalDate startDate;
-
-    @Getter
-    private LocalDate endDate;
-
-    @Getter
-    private Integer breakdays;
-
-    @Getter
-    private String name;
-
-    @Getter
-    private String email;
+    @Getter private String repoDir;
+    @Getter private LocalDate startDate;
+    @Getter private LocalDate endDate;
+    @Getter private Integer breakdays;
+    @Getter private String name;
+    @Getter private String email;
+    @Getter private Integer lowerFrequencyBound;
+    @Getter private Integer upperFrequencyBound;
 
     private Configuration(){}
 
@@ -50,8 +41,17 @@ public class Configuration {
         String breakdays = configFile.get("GENERAL", "BREAK_DAYS");
         String name      = configFile.get("USER", "NAME");
         String email     = configFile.get("USER", "EMAIL");
+        String lower     = configFile.get("FREQUENCY", "LOWER");
+        String upper     = configFile.get("FREQUENCY", "UPPER");
 
-        boolean isConfigBad = Stream.of(repoDir, startDate, endDate,breakdays, name, email).anyMatch(x -> x == null);
+        boolean isConfigBad = Stream.of(repoDir,
+                startDate,
+                endDate,
+                name,
+                breakdays,
+                email,
+                lower,
+                upper).anyMatch(x -> x == null);
 
         if (isConfigBad) {
             //TODO list the bad parameters in exception
@@ -63,6 +63,8 @@ public class Configuration {
             instance.breakdays = Integer.parseInt(breakdays);
             instance.name = name;
             instance.email = email;
+            instance.lowerFrequencyBound = Integer.parseInt(lower);
+            instance.upperFrequencyBound = Integer.parseInt(upper);
         }
 
         return instance;
