@@ -17,9 +17,10 @@ public class RandomCommiter {
     private int days;
     private Git git;
     private TimeZone tz;
+    private Configuration cfg;
 
     public RandomCommiter() throws GitAPIException {
-        Configuration cfg = Configuration.getInstance();
+        cfg = Configuration.getInstance();
 
         days = (int) cfg.getStartDate().until(cfg.getEndDate(), ChronoUnit.DAYS);
         breakdays = cfg.getBreakdays();
@@ -34,8 +35,6 @@ public class RandomCommiter {
     }
 
     public void executeCommits() throws IOException, GitAPIException {
-        Configuration cfg = Configuration.getInstance();
-
         List<Integer> breakDayList = generateFreeDayList(days, breakdays);
         int nextFreeDay = breakDayList.remove(0);
         breakdays--;
@@ -48,19 +47,8 @@ public class RandomCommiter {
                 }
                 continue;
             }
-
             LocalDate commitDate = cfg.getStartDate().plusDays(d);
-            String fileName = commitDate.toString();
-
-            File file = new File(cfg.getRepoDir(), fileName);
-            file.createNewFile();
-
-            Date date = java.sql.Date.valueOf(commitDate);
-            PersonIdent committer = new PersonIdent(cfg.getName(), cfg.getEmail(), date, tz);
-
-            git.add().addFilepattern(fileName).call();
-
-            git.commit().setMessage("A commit for " + fileName).setCommitter(committer).call();
+            executeDayCommits(commitDate);
         }
     }
 
@@ -78,55 +66,43 @@ public class RandomCommiter {
         return returnValue;
     }
 
-    /*private static LocalDate generateRandomDateBetweenTwoDates (LocalDate begin, LocalDate end) {
-        Random randomIntGenerator = new Random();
+    private void executeDayCommits(LocalDate commitDate) throws IOException, GitAPIException {
+        Date date = java.sql.Date.valueOf(commitDate);
+        PersonIdent committer = new PersonIdent(cfg.getName(), cfg.getEmail(), date, tz);
 
-        int randomDateOffset = abs(randomIntGenerator.nextInt()) % days;
-        LocalDate randomDate = begin.plusDays(randomDateOffset);
-        return randomDate;
-    }*/
-    private static void writeToFile(String data, File file) {
+        String fileName = commitDate.toString();
+        File file = new File(cfg.getRepoDir(), fileName);
+        int nCommits = generateNumberOfCommitsForDay();
+
+        file.createNewFile();
+
+        for (; nCommits > 0; --nCommits) {
+            String lineContent = UUID.randomUUID().toString() + "\n";
+            appendToFile(lineContent, file);
+            git.add().addFilepattern(fileName).call();
+            git.commit().setMessage("A commit for " + fileName).setCommitter(committer).call();
+        }
+    }
+
+    private int generateNumberOfCommitsForDay() {
+        Random r = new Random();
+        int min = cfg.getLowerFrequencyBound();
+        int max = cfg.getUpperFrequencyBound();
+        return r.nextInt((max - min) + 1) + min;
+    }
+
+    private static void appendToFile(String data, File file) {
         FileWriter fr = null;
 
         try {
-            fr = new FileWriter(file);
+            fr = new FileWriter(file, true);
             fr.write(data);
         } catch (IOException e) {
-            e.printStackTrace();
         } finally {
-            //close resources
             try {
                 fr.close();
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
-    /*final int breakDays = 35;
-        final LocalDate startDate = LocalDate.of(2019, 1, 1);
-        final LocalDate endDate = LocalDate.of(2019,10,1);
-
-        final int maximumCommitsPerDay;
-        final String repoPath = "/Users/f.wolff/testrepo";
-
-        File repoDir = new File(repoPath);
-
-        Git git = Git.init()
-                     .setDirectory(repoDir)
-                     .call();
-
-        String newRandomFile = UUID.randomUUID().toString();
-        String dateString = "";
-
-        for (int i=0; i < breakDays; ++i) {
-            LocalDate randomDate = generateRandomDateBetweenTwoDates(startDate, endDate);
-            dateString += randomDate.toString() + "\n";
-        }
-
-        writeToFile(dateString, new File(repoPath, newRandomFile));
-
-        git.add().addFilepattern(".").call();
-        git.commit()
-           .setMessage("Commit all changes including additions")
-           .call();*/
 }
