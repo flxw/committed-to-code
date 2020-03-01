@@ -6,7 +6,9 @@
 
 I think this is funny and that it can be bypassed easily.
 Thinking about a pet project anyway, I started this ``committed-to-code``,
-also to get back into Java. 
+also to get back into Java.
+Use this generator to generate a series of commits which will immediately fill your activity timeline
+and make you appear a lot more active.
 
 ## Installation
 To install, simply clone the repository,
