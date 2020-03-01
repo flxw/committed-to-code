@@ -6,6 +6,7 @@ import org.ini4j.Ini;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -45,27 +46,32 @@ public class Configuration {
         String lower     = configFile.get("FREQUENCY", "LOWER");
         String upper     = configFile.get("FREQUENCY", "UPPER");
 
-        boolean isConfigBad = Stream.of(repoDir,
-                startDate,
-                endDate,
-                name,
-                breakdays,
-                email,
-                lower,
-                upper).anyMatch(Objects::isNull);
+        boolean anyNotSet = Stream.of(repoDir,
+                                        startDate,
+                                        endDate,
+                                        name,
+                                        breakdays,
+                                        email,
+                                        lower,
+                                        upper).anyMatch(x -> x == null || x.isEmpty());
 
-        if (isConfigBad) {
-            //TODO list the bad parameters in exception
-            throw new ConfigurationException();
+        if (anyNotSet) {
+            throw new ConfigurationNullException();
         } else {
-            instance.repoDir = repoDir;
-            instance.startDate = LocalDate.parse(startDate);
-            instance.endDate = LocalDate.parse(endDate);
-            instance.breakdays = Integer.parseInt(breakdays);
-            instance.name = name;
-            instance.email = email;
-            instance.lowerFrequencyBound = Integer.parseInt(lower);
-            instance.upperFrequencyBound = Integer.parseInt(upper);
+            try {
+                instance.repoDir = repoDir;
+                instance.startDate = LocalDate.parse(startDate);
+                instance.endDate = LocalDate.parse(endDate);
+                instance.breakdays = Integer.parseInt(breakdays);
+                instance.name = name;
+                instance.email = email;
+                instance.lowerFrequencyBound = Integer.parseInt(lower);
+                instance.upperFrequencyBound = Integer.parseInt(upper);
+            } catch (DateTimeParseException ex) {
+                throw new ConfigurationBadException(ex.getParsedString());
+            } catch (NumberFormatException ex) {
+                throw new ConfigurationBadException(ex.getMessage());
+            }
         }
 
         return instance;

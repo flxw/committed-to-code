@@ -33,7 +33,7 @@ public class Main {
             System.out.println("Configuration file is not accessible.");
             System.exit(2);
         } catch (ConfigurationException e) {
-            System.out.println("Please check the configuration file contents, they are not valid.");
+            System.out.println(e);
             System.exit(3);
         }
 

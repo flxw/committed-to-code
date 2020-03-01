@@ -1,4 +1,4 @@
 package de.flxw;
 
-public class ConfigurationException extends Exception {
-}
+public abstract class ConfigurationException extends Exception {}
+
