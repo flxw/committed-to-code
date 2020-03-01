@@ -4,7 +4,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.apache.commons.cli.*;
 import java.io.IOException;
 
-public class Main {
+public class MainClass {
     public static void main(String[] args)  {
         Options options = new Options();
 
@@ -21,14 +21,13 @@ public class Main {
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp("utility-name", options);
-
             System.exit(1);
         }
 
         Configuration config = null;
         try {
             String configurationFile = cmd.getOptionValue("configurationfile");
-            config = Configuration.setupConfiguration(configurationFile);
+            Configuration.setupConfiguration(configurationFile);
         } catch (IOException e) {
             System.out.println("Configuration file is not accessible.");
             System.exit(2);
