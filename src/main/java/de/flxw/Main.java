@@ -5,7 +5,7 @@ import org.apache.commons.cli.*;
 import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) throws GitAPIException {
+    public static void main(String[] args)  {
         Options options = new Options();
 
         Option input = new Option("c", "configurationfile", true, "configuration file path");
