@@ -6,6 +6,7 @@ import org.ini4j.Ini;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class Configuration {
@@ -51,7 +52,7 @@ public class Configuration {
                 breakdays,
                 email,
                 lower,
-                upper).anyMatch(x -> x == null);
+                upper).anyMatch(Objects::isNull);
 
         if (isConfigBad) {
             //TODO list the bad parameters in exception
@@ -70,13 +71,5 @@ public class Configuration {
         return instance;
     }
 
-    @Override
-    public String toString() {
-        return "Configuration{" +
-                "repoDir='" + repoDir + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", breakdays=" + breakdays +
-                '}';
-    }
+
 }
